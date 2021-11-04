@@ -144,9 +144,9 @@ def plot_data(data, is_edge, color, margin=0):
         return
 
     if is_edge:
-        if len(data) > 0:
-            x, y = data.T
-            plt.plot(x, y, color, linewidth=1)
+        x, y = data.T
+        plt.plot(x, y, color, linewidth=1)
+
     else:
         for array in data:
             array = np.array(array, dtype=object)
@@ -216,7 +216,6 @@ def split(geometric, threshold, count=0):
         # split top to bottom
         a = box(bounds[0], bounds[1], bounds[0] + width / 2, bounds[3])
         b = box(bounds[0] + width / 2, bounds[1], bounds[2], bounds[3])
-
     result = []
     for d in (a, b,):
         c = geometric.intersection(d)
