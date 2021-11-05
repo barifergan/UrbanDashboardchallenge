@@ -1,4 +1,3 @@
-import math
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,7 +18,7 @@ def step_0(path):
     utm_parcels = np.array(utm_parcels, dtype=object)
     utm_network = np.array(utm_network, dtype=object)
 
-    # plot_data(utm_network, False, 'r')
+    plot_data(utm_network, False, 'r')
     plot_data(utm_parcels, False, 'b')
     plt.show()
 
@@ -27,25 +26,8 @@ def step_0(path):
 
 
 def step_1(network, parcels):
-    # TODO: fix distance between 2 edges!!
-
     plot_data(network, False, 'r')
     plot_data(parcels, False, 'b')
-
-    # for net in network:
-    #     for i in range(0, len(net) - 1):
-    #         network_edge = net[i], net[i + 1]
-    #         for parcel in parcels:
-    #             closest_edge = None
-    #             shortest_distance = sys.maxsize
-    #             for j in range(0, len(parcel) - 1):
-    #                 parcel_edge = parcel[j], parcel[j + 1]
-    #                 dist = get_two_lines_distance(parcel_edge, network_edge)
-    #                 if dist <= 20 and dist < shortest_distance:
-    #                     shortest_distance = dist
-    #                     closest_edge = parcel_edge
-    #                     closest_edge = np.array(closest_edge, dtype=object)
-    #             plot_data(closest_edge, True, 'g')
 
     for net in network:
         for i in range(len(net) - 1):
@@ -58,7 +40,6 @@ def step_1(network, parcels):
                     parcel_edge = parcel[j], parcel[j + 1]
                     parcel_linestring = LineString(parcel_edge)
                     dist = network_linestring.distance(parcel_linestring)
-
                     if dist <= 20 and dist < shortest_distance:
                         shortest_distance = dist
                         closest_edge = parcel_edge
@@ -74,7 +55,7 @@ def step_2(parcels, threshold, margin=0):
     for parcel in parcels:
         polygon = Polygon(parcel)
         resize_polygon = polygon.buffer(-margin)
-        parcels_to_split.append(polygon_to_parcel(resize_polygon))  # get  bounding-box of the polygon
+        parcels_to_split.append(polygon_to_parcel(resize_polygon))  # get bounding-box of the polygon
 
     for parcel in parcels_to_split:
         final_result.append(split_box(parcel, threshold))  # send bounding-box and get all sub boxes into list
@@ -89,7 +70,7 @@ def step_3(parcels, margin):
         for sub in polygon:
             coordinates_list = polygon_to_parcel(sub)
             result = np.array(coordinates_list)
-            plot_data(result, True, 'lightgray', margin)
+            plot_data(result, True, 'lightgray')
 
     step_1(network_array, parcels_array)
     plt.show()
@@ -107,7 +88,7 @@ def get_lists_from_file(path):
     with open(path, 'r') as f:
         lines = f.read()
 
-    # split the string into lists TODO: find another way to split
+    # split the string into lists
     lines = lines.split('[[')
     lines[1] = '[[' + lines[1]
     lines[2] = '[[' + lines[2]
@@ -139,56 +120,19 @@ def convert_to_utm(list_to_convert):
     return utm_list
 
 
-def plot_data(data, is_edge, color, margin=0):
+def plot_data(data, is_edge, color):
     if data is None:
         return
 
     if is_edge:
         if len(data) > 0:
             x, y = data.T
-            plt.plot(x, y, color, linewidth=1)
+            plt.plot(x, y, color, linewidth=1.5)
     else:
         for array in data:
             array = np.array(array, dtype=object)
             x, y = array.T
-            plt.plot(x, y, color, linewidth=1)
-
-
-# def get_two_lines_distance(edge1, edge2):
-#
-#     distances = []
-#     # edge1 endpoints [x,y]
-#     p1 = edge1[0]
-#     p2 = edge1[1]
-#
-#     # edge 2 endpoints [x,y]
-#     p3 = edge2[0]
-#     p4 = edge2[1]
-#
-#     # edge1 midpoint
-#     midpoint1 = (p1[0] + p2[0])/2, (p1[1] + p2[1])/2
-#
-#     # edge2 midpoint
-#     midpoint2 = (p3[0] + p4[0])/2, (p3[1] + p4[1])/2
-#
-#     edge1_points = [p1, midpoint1, p2]
-#     edge2_points = [p3, midpoint2, p4]
-#
-#     # find euclidean distance between every 2 points, and selects the shortest distance
-#     for e1_p in edge1_points:
-#         for e2_p in edge2_points:
-#             dist = euclidean_distance(e1_p[0], e2_p[0], e1_p[1], e2_p[1])
-#             distances.append(dist)
-#
-#     shortest_dist = min(distances)
-#     return shortest_dist
-
-#
-# def euclidean_distance(x1, x2, y1, y2):
-#     pow_x = math.pow((x1 - x2), 2)
-#     pow_y = math.pow((y1 - y2), 2)
-#     dist = math.sqrt(pow_x + pow_y)
-#     return dist
+            plt.plot(x, y, color, linewidth=1.5)
 
 
 def split_box(bounding_box, threshold):
@@ -198,8 +142,8 @@ def split_box(bounding_box, threshold):
     return final_result
 
 
+# recursive function to split polygons
 def split(geometric, threshold, count=0):
-    """Split a Polygon into two parts across it's shortest dimension"""
     bounds = geometric.bounds
     if not bounds:
         return [geometric]
