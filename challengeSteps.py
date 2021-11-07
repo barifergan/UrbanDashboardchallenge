@@ -8,6 +8,10 @@ from shapely.geometry import *
 
 
 def step_0(path):
+    """
+    Gets path of file and extract lists of parcels and network, convert them to UTM format and plot the data.
+    Returns lists of UTM coordinates.
+    """
     network, parcels = get_lists_from_file(path)
 
     utm_network = convert_to_utm(network)
@@ -26,6 +30,10 @@ def step_0(path):
 
 
 def step_1(network, parcels):
+    """
+    Gets to lists of coordinates: network, parcels and detect the closest edge of each "parcel" - to a nearby "network"
+    edge, then plot the data.
+    """
     plot_data(network, False, 'r')
     plot_data(parcels, False, 'b')
 
@@ -49,6 +57,10 @@ def step_1(network, parcels):
 
 
 def step_2(parcels, threshold, margin=0):
+    """
+    Gets list of parcels and resizes each parcel by "margin". Sends the resized parcels to split by given threshold.
+    Returns list of all sub parcels.
+    """
     parcels_to_split = []
     final_result = []
 
@@ -64,6 +76,10 @@ def step_2(parcels, threshold, margin=0):
 
 
 def step_3(parcels, margin):
+    """
+    Gets list of parcels and find the internal polygon of each resulting polygon - given a "margin",
+    then plot the data.
+    """
     polygons = step_2(parcels, 100, margin)
     # convert polygon object into list of coordinates (for plot)
     for polygon in polygons:
@@ -77,6 +93,11 @@ def step_3(parcels, margin):
 
 
 def polygon_to_parcel(polygon):
+    """
+    Gets shapely polygon object and convert it to list of coordinates.
+    Returns list of coordinates.
+    """
+
     coordinates_list = []
     x, y = polygon.exterior.coords.xy
     for i in range(len(x)):
@@ -85,6 +106,11 @@ def polygon_to_parcel(polygon):
 
 
 def get_lists_from_file(path):
+    """
+    Gets file path and extracts 2 lists from file: list of polylines, list of polygons.
+    Returns both lists.
+    """
+
     with open(path, 'r') as f:
         lines = f.read()
 
@@ -103,6 +129,11 @@ def get_lists_from_file(path):
 
 
 def convert_to_utm(list_to_convert):
+    """
+    Gets list of geographic coordinates (latitude/longitude- given in WG84 coordinates) and convert them to UTM format.
+    Returns list of UTM coordinates.
+    """
+
     utm_list = []
 
     # add coordinates as utm format to the new list
@@ -121,6 +152,15 @@ def convert_to_utm(list_to_convert):
 
 
 def plot_data(data, is_edge, color):
+    """
+    Plot data with matplotlib.pyplot in the chosen color
+
+    Parameters:
+        data: numpy array to plot
+        is-edge: type of the data (edge or whole shape)
+        color: color of the plotted data
+    """
+
     if data is None:
         return
 
@@ -136,14 +176,24 @@ def plot_data(data, is_edge, color):
 
 
 def split_box(bounding_box, threshold):
+    """
+    Gets bounding box of parcel and convert it to polygon object, send polygon to "split" function.
+    Returns list of sub polygons splitted by threshold.
+    """
+
     poly = Polygon([[p[0], p[1]] for p in bounding_box])
     final_result = split(poly, threshold)
 
     return final_result
 
 
-# recursive function to split polygons
 def split(geometric, threshold, count=0):
+    """
+    split geometric parcel into two boxes - on the longer edge, if the longer edge of the box is greater than threshold.
+    Returns list of sub-parcels.
+    Reference code used: "https://snorfalorpagus.net/blog/2016/03/13/splitting-large-polygons-for-faster-intersections/"
+    """
+
     bounds = geometric.bounds
     if not bounds:
         return [geometric]
